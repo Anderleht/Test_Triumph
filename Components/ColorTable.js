@@ -1,18 +1,18 @@
-class ModalWindow extends HTMLElement {
+export default class ColorTable extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.isOpen = true;
-        this.colors = [
-            { colorName: 'Мятное утро', type: 'Основной', code: '#86EAE9' },
-            { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AAFEA9' },
-            { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AFEABF' },
-        ];
-    }
-
-    connectedCallback() {
-        this.render();
-        this.setupEventListeners();
+        this.state = {
+            colors: [
+                { colorName: 'Мятное утро', type: 'Основной', code: '#86EAE9' },
+                { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AAFEA9' },
+                { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AFEABF' },
+            ],
+            ui: {
+                tableOpen: true,
+            },
+        }
+        this.draggedRow = null;
     }
 
     render() {
@@ -21,22 +21,18 @@ class ModalWindow extends HTMLElement {
     <style>
   @font-face {
     font-family: 'Lato';
-    src: url('fonts/Lato-Regular.ttf') format('ttf');
+    src: url('../fonts/Lato-Regular.ttf') format('ttf');
     font-weight: 400;
     font-style: normal;
   }
 
   @font-face {
     font-family: 'Lato';
-    src: url('fonts/Lato-Bold.ttf') format('ttf');
+    src: url('../fonts/Lato-Bold.ttf') format('ttf');
     font-weight: 700;
     font-style: normal;
   }
 
-  img {
-    max-width: 100%;
-    display: block;
-  }
 
   .modal-content {
     width: 679px;
@@ -56,12 +52,18 @@ class ModalWindow extends HTMLElement {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-right: 10px;
-    padding-left: 10px;
   }
 
-  .save-button,
   .close-button {
+    padding-left: 10px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 18px;
+    margin-left: auto;
+  }
+  .save-button {
+    padding: 0;
     cursor: pointer;
     border: none;
     background: none;
@@ -78,10 +80,6 @@ class ModalWindow extends HTMLElement {
     margin-top: 20px;
     line-height: 50px;
     height: 22px;
-  }
-
-  .save-button {
-    margin-right: 4px;
   }
 
   .color-table {
@@ -140,7 +138,7 @@ class ModalWindow extends HTMLElement {
     align-items: center;
     justify-content: center;
     margin-left: auto;
-    margin-right: auto;
+    margin-right: 244px;
     width: fit-content;
     margin-top: 30px;
     margin-bottom: 32px;
@@ -156,15 +154,35 @@ class ModalWindow extends HTMLElement {
     height: 41px;
     margin: 0 auto;
   }
+    .color-table-body tr.dragged {
+    background-color: #545454;
+  }
 
-  .edit-button {}
+  .color-table-body tr.over {
+    background-color: #717171;
+  }
+  .edit-button {
+    background-image: url("../icons/change.png");
+    border: none;
+  }
+  .delete-button {
+  border: none;
+  background-image: url("../icons/delete.png");
+  }
+  
+  .edit-button:hover {
+    background-image: url("../icons/change_active.png");
+  }
+  .delete-button:hover {
+  background-image: url("../icons/delete_active.png");
+  }
 </style>
 
 <div class="modal-content">
   <div class="modal-header">
     <h2 class="color-table-name">Таблица цветов</h2>
-    <button class="save-button"><img src="icons/Vector.png" alt="Кнопка сохранить"></button>
-    <button class="close-button"><img src="icons/close_icon.png" alt="Кнопка закрыть"></button>
+    <button class="save-button"><img src="../icons/Vector.png" alt="Кнопка сохранить"></button>
+    <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
   </div>
   <table class="color-table">
     <thead>
@@ -186,11 +204,51 @@ class ModalWindow extends HTMLElement {
 
         this.updateTable();
     }
+    makeRowsDraggable() {
+        const rows = Array.from(this.shadowRoot.querySelectorAll('.color-table-body tr'));
+        rows.forEach(row => {
+            row.draggable = true;
+            row.addEventListener('dragstart', this.handleDragStart.bind(this));
+            row.addEventListener('dragover', this.handleDragOver.bind(this));
+            row.addEventListener('dragend', this.handleDragEnd.bind(this));
+        });
+    }
 
+    handleDragStart(event) {
+        this.draggedRow = event.target;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/html', event.target.innerHTML);
+    }
+
+    handleDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    handleDragEnd(event) {
+        if (!this.draggedRow) return;
+        const targetRow = event.target;
+        const parent = targetRow.parentNode;
+
+        if (targetRow !== this.draggedRow) {
+            const draggedIndex = Array.from(parent.children).indexOf(this.draggedRow);
+            const targetIndex = Array.from(parent.children).indexOf(targetRow);
+
+            parent.removeChild(this.draggedRow);
+            parent.insertBefore(this.draggedRow, targetRow);
+
+            // Update the order of colors in the data array
+            const [color] = this.colors.splice(draggedIndex, 1);
+            this.colors.splice(targetIndex, 0, color);
+        }
+
+        this.draggedRow = null;
+    }
     updateTable() {
         const tbody = this.shadowRoot.querySelector('tbody');
         tbody.innerHTML = '';
-        this.colors.forEach((color, index) => {
+        this.state.colors.forEach((color, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
       <td>
@@ -199,11 +257,12 @@ class ModalWindow extends HTMLElement {
       <td>${color.colorName}</td>
       <td>${color.type}</td>
       <td>${color.code}</td>
-      <td><button class="edit-button" data-index="${index}"><img src="icons/change.png" alt="Кнопка изменить"></button></td>
-      <td><button class="delete-button" data-index="${index}"><img src="icons/delete.png" alt="Кнопка удалить"></button></td>
+      <td><button class="edit-button" data-index="${index}"></button></td>
+      <td><button class="delete-button" data-index="${index}"></button></td>
     `;
             tbody.appendChild(row);
         });
+        this.makeRowsDraggable()
     }
 
     setupEventListeners() {
@@ -240,12 +299,12 @@ class ModalWindow extends HTMLElement {
     }
 
     open() {
-        this.isOpen = true;
+        this.state.ui.tableOpen = true;
         this.style.display = 'block';
     }
 
     close() {
-        this.isOpen = false;
+        this.state.ui.tableOpen = false;
         this.style.display = 'none';
     }
 
@@ -257,13 +316,13 @@ class ModalWindow extends HTMLElement {
 
         if (name && colorName && type && code) {
             const newColor = { name, colorName, type, code };
-            this.colors.push(newColor);
+            this.state.colors.push(newColor);
             this.updateTable();
         }
     }
 
     editColor(index) {
-        const color = this.colors[index];
+        const color = this.state.colors[index];
         const newName = prompt('Введите новое название цвета:', color.name);
         const newColorName = prompt('Введите новое название цвета:', color.colorName);
         const newType = prompt('Введите новый тип цвета:', color.type);
@@ -279,16 +338,12 @@ class ModalWindow extends HTMLElement {
     }
 
     deleteColor(index) {
-        this.colors.splice(index, 1);
+        this.state.colors.splice(index, 1);
         this.updateTable();
     }
+    connectedCallback() {
+        this.render();
+        this.makeRowsDraggable();
+        this.setupEventListeners();
+    }
 }
-
-customElements.define('modal-window', ModalWindow);
-
-const openModalButton = document.getElementById('openModal');
-const modal = document.querySelector('modal-window');
-
-openModalButton.addEventListener('click', () => {
-    modal.open();
-});
