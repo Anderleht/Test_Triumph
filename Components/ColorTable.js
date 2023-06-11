@@ -37,52 +37,41 @@ export default class ColorTable extends HTMLElement {
 
 
   .modal-content {
-  display: flex;
-  flex-direction: column;
     width: 679px;
     color: #ffffff;
     background-color: #313131;
     border-radius: 20px;
     align-items: center;
+    justify-content: center;
     font-family: 'Lato';
     font-weight: 600;
     box-sizing: border-box;
+    margin: 10% auto;
     border: 1px solid #000000;
   }
 
-   .modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-      }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-      .button-container {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end; 
-      }
-
-      .close-button {
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
-        cursor: pointer;
-        border: none;
-        background: none;
-        font-size: 18px;
-        margin-left: auto;
-      }
-
-      .save-button {
-        display: flex;
-        align-items: center;
-        padding: 0;
-        cursor: pointer;
-        border: none;
-        background: none;
-        font-size: 18px;
-      }
-
+  .close-button {
+    padding-left: 10px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 18px;
+    margin-left: auto;
+  }
+  .save-button {
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 18px;
+    margin-left: auto;
+  }
 
   .modal-header h2 {
     flex-grow: 1;
@@ -90,6 +79,7 @@ export default class ColorTable extends HTMLElement {
     font-weight: 600;
     padding-bottom: 25px;
     font-size: 18px;
+    margin-top: 20px;
     line-height: 50px;
     height: 22px;
   }
@@ -153,7 +143,7 @@ export default class ColorTable extends HTMLElement {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 30px auto 32px auto;
+    margin: 30px 244px 32px auto;
     width: fit-content;
     overflow: hidden;
     border-radius: 100px;
@@ -192,10 +182,8 @@ export default class ColorTable extends HTMLElement {
 <div class="modal-content">
   <div class="modal-header">
     <h2 class="color-table-name">Таблица цветов</h2>
-    <div class="button-container">
-      <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
-      <button class="save-button"><img src="../icons/Vector.png" alt="Кнопка сохранить"></button>
-    </div>
+    <button class="save-button"><img src="../icons/Vector.png" alt="Кнопка сохранить"></button>
+    <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
   </div>
   <table class="color-table">
     <thead>
