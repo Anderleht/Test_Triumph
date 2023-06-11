@@ -8,11 +8,13 @@ export default class ColorTable extends HTMLElement {
                 { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AAFEA9' },
                 { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AFEABF' },
             ],
-            ui: {
-                tableOpen: true,
-            },
         }
-        this.draggedRow = null;
+    }
+
+    connectedCallback() {
+        this.render();
+        this.setupEventListeners();
+        this.loadData();
     }
 
     render() {
@@ -35,41 +37,52 @@ export default class ColorTable extends HTMLElement {
 
 
   .modal-content {
+  display: flex;
+  flex-direction: column;
     width: 679px;
     color: #ffffff;
     background-color: #313131;
     border-radius: 20px;
     align-items: center;
-    justify-content: center;
     font-family: 'Lato';
     font-weight: 600;
     box-sizing: border-box;
-    margin: 10% auto;
     border: 1px solid #000000;
   }
 
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+   .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
 
-  .close-button {
-    padding-left: 10px;
-    cursor: pointer;
-    border: none;
-    background: none;
-    font-size: 18px;
-    margin-left: auto;
-  }
-  .save-button {
-    padding: 0;
-    cursor: pointer;
-    border: none;
-    background: none;
-    font-size: 18px;
-    margin-left: auto;
-  }
+      .button-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; 
+      }
+
+      .close-button {
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 18px;
+        margin-left: auto;
+      }
+
+      .save-button {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 18px;
+      }
+
 
   .modal-header h2 {
     flex-grow: 1;
@@ -77,7 +90,6 @@ export default class ColorTable extends HTMLElement {
     font-weight: 600;
     padding-bottom: 25px;
     font-size: 18px;
-    margin-top: 20px;
     line-height: 50px;
     height: 22px;
   }
@@ -110,7 +122,11 @@ export default class ColorTable extends HTMLElement {
 
   .color-table td .edit-button,
   .color-table td .delete-button {
-    width: 115px;
+    background-color: #424242;
+    border: none;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 16.66%;
     height: 55px;
     margin: 0;
     padding: 0;
@@ -121,7 +137,7 @@ export default class ColorTable extends HTMLElement {
     border-bottom: 1px solid #313131;
     border-right: 1px solid #313131;
     height: 54px;
-    width: 115px;
+    width: 16.66%;
   }
 
   .color-table-body {
@@ -137,11 +153,8 @@ export default class ColorTable extends HTMLElement {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: auto;
-    margin-right: 244px;
+    margin: 30px auto 32px auto;
     width: fit-content;
-    margin-top: 30px;
-    margin-bottom: 32px;
     overflow: hidden;
     border-radius: 100px;
     padding: 9px 67px;
@@ -163,26 +176,26 @@ export default class ColorTable extends HTMLElement {
   }
   .edit-button {
     background-image: url("../icons/change.png");
-    border: none;
   }
   .delete-button {
-  border: none;
-  background-image: url("../icons/delete.png");
+    background-image: url("../icons/delete.png");
   }
   
   .edit-button:hover {
-    background-image: url("../icons/change_active.png");
+    background-image: url("../icons/change-active.png");
   }
   .delete-button:hover {
-  background-image: url("../icons/delete_active.png");
+    background-image: url("../icons/delete-active.png");
   }
 </style>
 
 <div class="modal-content">
   <div class="modal-header">
     <h2 class="color-table-name">Таблица цветов</h2>
-    <button class="save-button"><img src="../icons/Vector.png" alt="Кнопка сохранить"></button>
-    <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
+    <div class="button-container">
+      <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
+      <button class="save-button"><img src="../icons/Vector.png" alt="Кнопка сохранить"></button>
+    </div>
   </div>
   <table class="color-table">
     <thead>
@@ -201,55 +214,57 @@ export default class ColorTable extends HTMLElement {
 </div>
         `;
         this.shadowRoot.appendChild(template.content.cloneNode(true));
-
         this.updateTable();
     }
-    makeRowsDraggable() {
-        const rows = Array.from(this.shadowRoot.querySelectorAll('.color-table-body tr'));
-        rows.forEach(row => {
-            row.draggable = true;
-            row.addEventListener('dragstart', this.handleDragStart.bind(this));
-            row.addEventListener('dragover', this.handleDragOver.bind(this));
-            row.addEventListener('dragend', this.handleDragEnd.bind(this));
-        });
-    }
-
-    handleDragStart(event) {
-        this.draggedRow = event.target;
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/html', event.target.innerHTML);
-    }
-
-    handleDragOver(event) {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        return false;
-    }
-
-    handleDragEnd(event) {
-        if (!this.draggedRow) return;
-        const targetRow = event.target;
-        const parent = targetRow.parentNode;
-
-        if (targetRow !== this.draggedRow) {
-            const draggedIndex = Array.from(parent.children).indexOf(this.draggedRow);
-            const targetIndex = Array.from(parent.children).indexOf(targetRow);
-
-            parent.removeChild(this.draggedRow);
-            parent.insertBefore(this.draggedRow, targetRow);
-
-            // Update the order of colors in the data array
-            const [color] = this.colors.splice(draggedIndex, 1);
-            this.colors.splice(targetIndex, 0, color);
-        }
-
-        this.draggedRow = null;
-    }
     updateTable() {
+
         const tbody = this.shadowRoot.querySelector('tbody');
+        tbody.addEventListener('dragstart', (evt) => {
+            evt.target.classList.add('selected');
+            evt.dataTransfer.setData('text/plain', ''); // Required for dragging in Firefox
+        });
+
+        tbody.addEventListener('dragend', (evt) => {
+            evt.target.classList.remove('selected');
+        });
+
+        tbody.addEventListener('drop', (evt) => {
+            evt.preventDefault();
+
+            const activeElement = tbody.querySelector('.selected');
+            const currentElement = evt.target;
+            const isMovable = activeElement !== currentElement &&
+                currentElement.classList.contains('color-table-row');
+
+            if (!isMovable) {
+                return;
+            }
+
+            const nextElement = getNextElement(evt.clientY, currentElement);
+
+            if (
+                nextElement &&
+                (activeElement === nextElement.previousElementSibling ||
+                    activeElement === nextElement)
+            ) {
+                return;
+            }
+
+            tbody.insertBefore(activeElement, nextElement);
+
+            const activeIndex = parseInt(activeElement.querySelector('.delete-button').dataset.index);
+            const newIndex = nextElement ? parseInt(nextElement.querySelector('.delete-button').dataset.index) : this.state.colors.length - 1;
+
+            const movedColor = this.state.colors.splice(activeIndex, 1)[0];
+            this.state.colors.splice(newIndex, 0, movedColor);
+            this.updateTable();
+        });
+
         tbody.innerHTML = '';
         this.state.colors.forEach((color, index) => {
             const row = document.createElement('tr');
+            row.classList.add('color-table-row');
+            row.draggable = true;
             row.innerHTML = `
       <td>
         <div class="color-square" style="background-color: ${color.code};"></div>
@@ -262,13 +277,12 @@ export default class ColorTable extends HTMLElement {
     `;
             tbody.appendChild(row);
         });
-        this.makeRowsDraggable()
     }
 
     setupEventListeners() {
-        const openModalButton = document.getElementById('openModal');
-        openModalButton.addEventListener('click', () => {
-            this.open();
+        const addButton = this.shadowRoot.querySelector('.add-color-button');
+        addButton.addEventListener('click', () => {
+            this.openColorPickerModal();
         });
 
         const closeButton = this.shadowRoot.querySelector('.close-button');
@@ -276,74 +290,70 @@ export default class ColorTable extends HTMLElement {
             this.close();
         });
 
-        const addButton = this.shadowRoot.querySelector('.add-color-button');
-        addButton.addEventListener('click', () => {
-            this.addColor();
+        const deleteButtons = this.shadowRoot.querySelectorAll('.delete-button');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                console.log('213')
+                const index = parseInt(event.target.dataset.index);
+                this.deleteColor(index);
+            });
         });
 
         const editButtons = this.shadowRoot.querySelectorAll('.edit-button');
         editButtons.forEach(button => {
             button.addEventListener('click', (event) => {
                 const index = parseInt(event.target.dataset.index);
-                this.editColor(index);
+                this.openColorPickerModalEdit(this.state.colors[index]);
             });
         });
 
-        const deleteButtons = this.shadowRoot.querySelectorAll('.delete-button');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', (event) => {
-                const index = parseInt(event.target.dataset.index);
-                this.deleteColor(index);
-            });
+        const saveButton = this.shadowRoot.querySelector('.save-button');
+        saveButton.addEventListener('click', () => {
+            this.saveData();
         });
     }
 
     open() {
-        this.state.ui.tableOpen = true;
         this.style.display = 'block';
     }
 
     close() {
-        this.state.ui.tableOpen = false;
         this.style.display = 'none';
-    }
-
-    addColor() {
-        const name = prompt('Введите название цвета:');
-        const colorName = prompt('Введите название цвета:');
-        const type = prompt('Введите тип цвета:');
-        const code = prompt('Введите код цвета:');
-
-        if (name && colorName && type && code) {
-            const newColor = { name, colorName, type, code };
-            this.state.colors.push(newColor);
-            this.updateTable();
-        }
-    }
-
-    editColor(index) {
-        const color = this.state.colors[index];
-        const newName = prompt('Введите новое название цвета:', color.name);
-        const newColorName = prompt('Введите новое название цвета:', color.colorName);
-        const newType = prompt('Введите новый тип цвета:', color.type);
-        const newCode = prompt('Введите новый код цвета:', color.code);
-
-        if (newName && newColorName && newType && newCode) {
-            color.name = newName;
-            color.colorName = newColorName;
-            color.type = newType;
-            color.code = newCode;
-            this.updateTable();
-        }
     }
 
     deleteColor(index) {
         this.state.colors.splice(index, 1);
         this.updateTable();
     }
-    connectedCallback() {
-        this.render();
-        this.makeRowsDraggable();
-        this.setupEventListeners();
+
+    saveData() {
+        const data = JSON.stringify(this.state.colors);
+        localStorage.setItem('colorTableData', data);
     }
+
+    loadData() {
+        const data = localStorage.getItem('colorTableData');
+        if (data) {
+            this.state.colors = JSON.parse(data);
+            this.updateTable();
+        }
+    }
+
+    setNewColor(newColor) {
+        console.log(newColor);
+        this.state.colors.push(newColor);
+        this.updateTable();
+    }
+
+    openColorPickerModal() {
+        const colorPickerModal = document.querySelector('color-modal');
+        colorPickerModal.style.display = 'block';
+    }
+
+    openColorPickerModalEdit(currentColor) {
+        const colorPickerModal = document.querySelector('color-modal');
+        colorPickerModal.style.display = 'block';
+        colorPickerModal.setColors(currentColor);
+    }
+
 }

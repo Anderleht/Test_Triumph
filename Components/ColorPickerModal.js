@@ -1,7 +1,8 @@
-export default class ColorPickerModal extends HTMLElement {
+import ColorTable from './ColorTable.js';
+
+export default class ColorPickerModal extends ColorTable {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         this.colorName = '';
         this.colorType = '';
         this.colorCode = '';
@@ -30,12 +31,11 @@ export default class ColorPickerModal extends HTMLElement {
     font-style: normal;
   }
   .modal {
-  border-radius: 20px;
-    display: block;
+    border-radius: 20px;
     position: fixed;
     padding: 15px;
     z-index: 1;
-    left: 0;
+    left: 300px;
     top: 0;
     width: 320px;
     overflow: auto;
@@ -54,10 +54,10 @@ export default class ColorPickerModal extends HTMLElement {
   .modal-title {
   text-align: center;
   margin-bottom: 27px;
-font-style: normal;
-font-weight: 600;
-font-size: 18px;
-line-height: 22px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 22px;
   }
 
   .form-group {
@@ -85,11 +85,6 @@ line-height: 22px;
     background-color: #777777;
     color: #A0A0A0;
   }
-  .form-group select option {
-  position: absolute;
-  top: 100%;
-  left: 0;
-}
 
   .button-wrapper {
     text-align: center;
@@ -118,13 +113,17 @@ line-height: 22px;
     <div class="form-group">
       <label for="colorType">Выберите тип</label>
       <select id="colorType">
-        <option value="Тип 1">Тип 1</option>
-        <option value="Тип 2">Тип 2</option>
+        <option value="Main">Main</option>
+        <option value="Primary">Primary</option>
+        <option value="Main">Secondary</option>
+        <option value="Primary">Base</option>
       </select>
       <div class="arrow"></div>
     </div>
     <div class="form-group">
       <label for="colorPicker">Выберите цвет</label>
+        <input type="text" id="hex">
+        <input type="color" id="color">
       <div id="colorPicker"></div>
     </div>
     <div class="button-wrapper">
@@ -138,35 +137,51 @@ line-height: 22px;
     }
 
     setupEventListeners() {
-        const modal = this.shadowRoot.querySelector('.modal');
-        const closeButton = this.shadowRoot.querySelector('.close-button');
+        let colorInput = this.shadowRoot.querySelector('#color');
+        let hexInput = this.shadowRoot.querySelector('#hex');
+
+        colorInput.addEventListener('input', () => {
+            hexInput.value = colorInput.value;
+        });
+
         const addButton = this.shadowRoot.querySelector('#addButton');
         const colorNameInput = this.shadowRoot.querySelector('#colorName');
-        const colorTypeInputs = this.shadowRoot.querySelectorAll('[name="colorType"]');
-        const colorPickerInput = this.shadowRoot.querySelector('#colorPicker');
+        const colorTypeElement = this.shadowRoot.querySelector('#colorType');
+        const colorPickerInput = this.shadowRoot.querySelector('#hex');
 
-        // При нажатии на кнопку "Добавить"
+        colorNameInput.value = this.colorName;
+        colorTypeElement.value = this.colorType;
+        colorPickerInput.value = this.colorCode;
+
         addButton.addEventListener('click', () => {
             this.colorName = colorNameInput.value;
-            this.colorType = [...colorTypeInputs].find(input => input.checked).value;
+            this.colorType = colorTypeElement.value;
             this.colorCode = colorPickerInput.value;
 
             // Создаем объект цвета и сохраняем его
             const colorObject = {
                 colorName: this.colorName,
-                colorType: this.colorType,
-                colorCode: this.colorCode
+                type: this.colorType,
+                code: this.colorCode
             };
 
-            // Вызываем пользовательское событие для передачи данных обратно во внешний код
-            this.dispatchEvent(new CustomEvent('colorAdded', { detail: colorObject }));
+            const data = document.querySelector('modal-window');
+            data.setNewColor(colorObject);
 
-            // Сбрасываем значения полей
             colorNameInput.value = '';
-            colorTypeInputs[0].checked = true;
+            colorTypeElement[0].checked = true;
             colorPickerInput.value = '';
+
+            const colorPickerModal = document.querySelector('color-modal');
+            colorPickerModal.style.display = 'none';
         });
     }
+
+    setColors(color) {
+        this.colorName(color.colorName);
+        this.colorType(color.type);
+        this.colorCode(color.code);
+    }
+
 }
 
-customElements.define('color-modal', ColorPickerModal);
