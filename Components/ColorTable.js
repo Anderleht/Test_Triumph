@@ -2,7 +2,7 @@ export default class ColorTable extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.state = {
+        this.state = { // Хранилище цветов
             colors: [
                 { colorName: 'Мятное утро', type: 'Основной', code: '#86EAE9' },
                 { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AAFEA9' },
@@ -17,7 +17,7 @@ export default class ColorTable extends HTMLElement {
         this.loadData();
     }
 
-    render() {
+    render() { // Отрисовка модального окна
         const template = document.createElement('template');
         template.innerHTML = `
     <style>
@@ -204,70 +204,105 @@ export default class ColorTable extends HTMLElement {
         this.shadowRoot.appendChild(template.content.cloneNode(true));
         this.updateTable();
     }
-    updateTable() {
 
-        const tbody = this.shadowRoot.querySelector('tbody');
-        tbody.addEventListener('dragstart', (evt) => {
+    updateTable() {  // Отрисовка и обновление таблицы цветов
+        const tbody = this.shadowRoot.querySelector('.color-table-body');
+
+        const getNextElement = (y, currentElement) => {
+            const currentElementRect = currentElement.getBoundingClientRect();
+            const offset = y - currentElementRect.top;
+            const nextElement =
+                offset > currentElementRect.height / 2
+                    ? currentElement.nextElementSibling
+                    : currentElement;
+
+            return nextElement;
+        }
+
+        tbody.addEventListener('dragstart', (evt) => { // Часть отвечающая за возможность переноса строк таблицы.
             evt.target.classList.add('selected');
-            evt.dataTransfer.setData('text/plain', ''); // Required for dragging in Firefox
+            evt.dataTransfer.setData('text/plain', ''); // Требуется для перетаскивания в Firefox
         });
 
         tbody.addEventListener('dragend', (evt) => {
             evt.target.classList.remove('selected');
         });
 
-        tbody.addEventListener('drop', (evt) => {
+        tbody.addEventListener('dragover', (evt) => {
             evt.preventDefault();
+            const draggedElement = tbody.querySelector('.selected');
+            const currentElement = evt.target.closest('.color-table-row', this.shadowRoot);
 
-            const activeElement = tbody.querySelector('.selected');
-            const currentElement = evt.target;
-            const isMovable = activeElement !== currentElement &&
-                currentElement.classList.contains('color-table-row');
-
-            if (!isMovable) {
+            if (draggedElement === currentElement) {
                 return;
             }
 
             const nextElement = getNextElement(evt.clientY, currentElement);
-
-            if (
-                nextElement &&
-                (activeElement === nextElement.previousElementSibling ||
-                    activeElement === nextElement)
-            ) {
+            if (nextElement && draggedElement === nextElement.previousElementSibling) {
                 return;
             }
 
-            tbody.insertBefore(activeElement, nextElement);
+            if (nextElement && draggedElement === nextElement.nextElementSibling) {
+                return;
+            }
 
-            const activeIndex = parseInt(activeElement.querySelector('.delete-button').dataset.index);
-            const newIndex = nextElement ? parseInt(nextElement.querySelector('.delete-button').dataset.index) : this.state.colors.length - 1;
+            tbody.insertBefore(draggedElement, nextElement);
+        });
 
-            const movedColor = this.state.colors.splice(activeIndex, 1)[0];
+        tbody.addEventListener('drop', (evt) => {
+            evt.preventDefault();
+            const draggedElement = tbody.querySelector('.selected');
+            const currentElement = document.elementFromPoint(evt.clientX, evt.clientY).closest('.color-table-row', this.shadowRoot);
+
+            if (!currentElement) {
+                return;
+            }
+
+            if (draggedElement === currentElement) {
+                return;
+            }
+
+            const nextElement = getNextElement(evt.clientY, currentElement);
+            if (nextElement && draggedElement === nextElement.previousElementSibling) {
+                return;
+            }
+
+            if (nextElement && draggedElement === nextElement.nextElementSibling) {
+                return;
+            }
+
+            const draggedIndex = parseInt(draggedElement.dataset.index);
+            const newIndex = nextElement ? parseInt(nextElement.dataset.index) : this.state.colors.length - 1;
+
+            const [movedColor] = this.state.colors.splice(draggedIndex, 1);
             this.state.colors.splice(newIndex, 0, movedColor);
+
             this.updateTable();
         });
 
+
         tbody.innerHTML = '';
-        this.state.colors.forEach((color, index) => {
+
+        this.state.colors.forEach((color, index) => { //  Отрисовка строк таблицы из хранилища цветов
             const row = document.createElement('tr');
             row.classList.add('color-table-row');
             row.draggable = true;
+            row.dataset.index = index;
             row.innerHTML = `
-      <td>
-        <div class="color-square" style="background-color: ${color.code};"></div>
-      </td>
-      <td>${color.colorName}</td>
-      <td>${color.type}</td>
-      <td>${color.code}</td>
-      <td><button class="edit-button" data-index="${index}"></button></td>
-      <td><button class="delete-button" data-index="${index}"></button></td>
-    `;
+        <td>
+          <div class="color-square" style="background-color: ${color.code};"></div>
+        </td>
+        <td>${color.colorName}</td>
+        <td>${color.type}</td>
+        <td>${color.code}</td>
+        <td><button class="edit-button" data-index="${index}"></button></td>
+        <td><button class="delete-button" data-index="${index}"></button></td>
+      `;
             tbody.appendChild(row);
         });
     }
 
-    setupEventListeners() {
+    setupEventListeners() { // Добавление слушателей событий для кнопок
         const addButton = this.shadowRoot.querySelector('.add-color-button');
         addButton.addEventListener('click', () => {
             this.openColorPickerModal();
@@ -278,17 +313,16 @@ export default class ColorTable extends HTMLElement {
             this.close();
         });
 
-        const deleteButtons = this.shadowRoot.querySelectorAll('.delete-button');
-        deleteButtons.forEach(button => {
+        const deleteButtons = this.shadowRoot.querySelectorAll('.delete-button'); // Удаление цвета из таблицы. Не работает
+        deleteButtons.forEach((button) => {
             button.addEventListener('click', (event) => {
-                console.log('213')
                 const index = parseInt(event.target.dataset.index);
                 this.deleteColor(index);
             });
         });
 
-        const editButtons = this.shadowRoot.querySelectorAll('.edit-button');
-        editButtons.forEach(button => {
+        const editButtons = this.shadowRoot.querySelectorAll('.edit-button'); // Редактирование цвета из таблицы. Не работает
+        editButtons.forEach((button) => {
             button.addEventListener('click', (event) => {
                 const index = parseInt(event.target.dataset.index);
                 this.openColorPickerModalEdit(this.state.colors[index]);
@@ -300,6 +334,8 @@ export default class ColorTable extends HTMLElement {
             this.saveData();
         });
     }
+
+    // Методы для работы с модальным окном
 
     open() {
         this.style.display = 'block';
@@ -327,8 +363,7 @@ export default class ColorTable extends HTMLElement {
         }
     }
 
-    setNewColor(newColor) {
-        console.log(newColor);
+    setNewColor(newColor) { // Метод через, который перебрасываются данные из компонента ColorPickerModal
         this.state.colors.push(newColor);
         this.updateTable();
     }

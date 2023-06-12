@@ -13,7 +13,7 @@ export default class ColorPickerModal extends ColorTable {
         this.setupEventListeners();
     }
 
-    render() {
+    render() { // Отрисовка модального окна
         const template = document.createElement('template');
         template.innerHTML = `
 <style>
@@ -136,7 +136,7 @@ export default class ColorPickerModal extends ColorTable {
         this.shadowRoot.appendChild(template.content.cloneNode(true));
     }
 
-    setupEventListeners() {
+    setupEventListeners() { // Добавление слушателей событий для кнопок
         let colorInput = this.shadowRoot.querySelector('#color');
         let hexInput = this.shadowRoot.querySelector('#hex');
 
@@ -177,7 +177,7 @@ export default class ColorPickerModal extends ColorTable {
         });
     }
 
-    setColors(color) {
+    setColors(color) { // Метод через, который перебрасываются данные из компонента ColorTable
         this.colorName(color.colorName);
         this.colorType(color.type);
         this.colorCode(color.code);
