@@ -259,7 +259,6 @@ export default class ColorTable extends HTMLElement {
                 return;
             }
 
-            tbody.insertBefore(draggedElement, nextElement);
             const draggedIndex = parseInt(draggedElement.dataset.index);
             const newIndex = nextElement ? parseInt(nextElement.dataset.index) : this.state.colors.length - 1;
 
