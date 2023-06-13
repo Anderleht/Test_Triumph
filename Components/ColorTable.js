@@ -299,6 +299,21 @@ export default class ColorTable extends HTMLElement {
         <td><button class="delete-button" data-index="${index}"></button></td>
       `;
             tbody.appendChild(row);
+            const editButton = row.querySelector('.edit-button');
+            const deleteButton = row.querySelector('.delete-button');
+
+            // Добавление обработчика события на кнопку редактирования
+            editButton.addEventListener('click', (evt) => {
+                const index = parseInt(evt.target.dataset.index);
+                const color = this.state.colors[index];
+                this.openColorPickerModalEdit(color, index);
+
+            });
+            // Добавление обработчика события на кнопку удаления
+            deleteButton.addEventListener('click', (evt) => {
+                const index = parseInt(evt.target.dataset.index);
+                this.deleteColor(index);
+            });
         });
     }
 
@@ -311,22 +326,6 @@ export default class ColorTable extends HTMLElement {
         const closeButton = this.shadowRoot.querySelector('.close-button');
         closeButton.addEventListener('click', () => {
             this.close();
-        });
-
-        const deleteButtons = this.shadowRoot.querySelectorAll('.delete-button'); // Удаление цвета из таблицы. Не работает
-        deleteButtons.forEach((button) => {
-            button.addEventListener('click', (event) => {
-                const index = parseInt(event.target.dataset.index);
-                this.deleteColor(index);
-            });
-        });
-
-        const editButtons = this.shadowRoot.querySelectorAll('.edit-button'); // Редактирование цвета из таблицы. Не работает
-        editButtons.forEach((button) => {
-            button.addEventListener('click', (event) => {
-                const index = parseInt(event.target.dataset.index);
-                this.openColorPickerModalEdit(this.state.colors[index]);
-            });
         });
 
         const saveButton = this.shadowRoot.querySelector('.save-button');
@@ -368,15 +367,25 @@ export default class ColorTable extends HTMLElement {
         this.updateTable();
     }
 
+    editColor(color, index) {
+        this.state.colors[index] = {
+            colorName: color.colorName,
+            type: color.type,
+            code: color.code
+        };
+        this.updateTable();
+    }
+
     openColorPickerModal() {
         const colorPickerModal = document.querySelector('color-modal');
         colorPickerModal.style.display = 'block';
+        colorPickerModal.state.stateOfComponent = 'adding';
     }
 
-    openColorPickerModalEdit(currentColor) {
+    openColorPickerModalEdit(currentColor, index) {
         const colorPickerModal = document.querySelector('color-modal');
         colorPickerModal.style.display = 'block';
-        colorPickerModal.setColors(currentColor);
+        colorPickerModal.setColors(currentColor, index, 'editing');
     }
 
 }

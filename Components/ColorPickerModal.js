@@ -3,9 +3,13 @@ import ColorTable from './ColorTable.js';
 export default class ColorPickerModal extends ColorTable {
     constructor() {
         super();
-        this.colorName = '';
-        this.colorType = '';
-        this.colorCode = '';
+        this.state = {
+            colorName: '',
+            colorType: '',
+            colorCode: '',
+            index: null,
+            stateOfComponent: null,
+        };
     }
 
     connectedCallback() {
@@ -149,38 +153,47 @@ export default class ColorPickerModal extends ColorTable {
         const colorTypeElement = this.shadowRoot.querySelector('#colorType');
         const colorPickerInput = this.shadowRoot.querySelector('#hex');
 
-        colorNameInput.value = this.colorName;
-        colorTypeElement.value = this.colorType;
-        colorPickerInput.value = this.colorCode;
+        if (this.state.stateOfComponent === 'editing') {
+            colorNameInput.value = this.state.colorName;
+            colorTypeElement.value = this.state.colorType;
+            colorPickerInput.value = this.state.colorCode;
+        }
 
         addButton.addEventListener('click', () => {
-            this.colorName = colorNameInput.value;
-            this.colorType = colorTypeElement.value;
-            this.colorCode = colorPickerInput.value;
+            this.state.colorName = colorNameInput.value;
+            this.state.colorType = colorTypeElement.value;
+            this.state.colorCode = colorPickerInput.value;
 
             // Создаем объект цвета и сохраняем его
             const colorObject = {
-                colorName: this.colorName,
-                type: this.colorType,
-                code: this.colorCode
+                colorName: this.state.colorName,
+                type: this.state.colorType,
+                code: this.state.colorCode
             };
 
-            const data = document.querySelector('modal-window');
-            data.setNewColor(colorObject);
+            const colorTable = document.querySelector('modal-window');
+            if (this.state.stateOfComponent === 'editing') {
+                colorTable.editColor(colorObject, this.state.index);
+            } else {
+                colorTable.setNewColor(colorObject);
+            }
 
             colorNameInput.value = '';
             colorTypeElement[0].checked = true;
             colorPickerInput.value = '';
+            this.state.stateOfComponent = null;
 
             const colorPickerModal = document.querySelector('color-modal');
             colorPickerModal.style.display = 'none';
         });
     }
 
-    setColors(color) { // Метод через, который перебрасываются данные из компонента ColorTable
-        this.colorName(color.colorName);
-        this.colorType(color.type);
-        this.colorCode(color.code);
+    setColors(color, index, state) { // Метод через, который перебрасываются данные из компонента ColorTable
+        this.state.colorName = color.colorName;
+        this.state.colorType = color.type;
+        this.state.colorCode = color.code;
+        this.state.index = index;
+        this.state.stateOfComponent = state;
     }
 
 }
