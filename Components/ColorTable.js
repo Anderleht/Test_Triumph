@@ -219,6 +219,18 @@ export default class ColorTable extends HTMLElement {
             return nextElement;
         }
 
+        const getPreviousElement = (y, currentElement) => {
+            const currentElementRect = currentElement.getBoundingClientRect();
+            const offset = y - currentElementRect.top;
+            const previousElement =
+                offset < currentElementRect.height / 2
+                    ? currentElement.previousElementSibling
+                    : currentElement;
+
+            return previousElement;
+        };
+
+
         tbody.addEventListener('dragstart', (evt) => { // Часть отвечающая за возможность переноса строк таблицы.
             evt.target.classList.add('selected');
             evt.dataTransfer.setData('text/plain', ''); // Требуется для перетаскивания в Firefox
@@ -238,48 +250,23 @@ export default class ColorTable extends HTMLElement {
             }
 
             const nextElement = getNextElement(evt.clientY, currentElement);
-            if (nextElement && draggedElement === nextElement.previousElementSibling) {
-                return;
-            }
+            const previousElement = getPreviousElement(evt.clientY, currentElement);
 
-            if (nextElement && draggedElement === nextElement.nextElementSibling) {
+            if (
+                nextElement && draggedElement === nextElement.previousElementSibling ||
+                previousElement && draggedElement === previousElement.nextElementSibling
+            ) {
                 return;
             }
 
             tbody.insertBefore(draggedElement, nextElement);
-        });
-
-        tbody.addEventListener('drop', (evt) => {
-            evt.preventDefault();
-            const draggedElement = tbody.querySelector('.selected');
-            const currentElement = document.elementFromPoint(evt.clientX, evt.clientY).closest('.color-table-row', this.shadowRoot);
-
-            if (!currentElement) {
-                return;
-            }
-
-            if (draggedElement === currentElement) {
-                return;
-            }
-
-            const nextElement = getNextElement(evt.clientY, currentElement);
-            if (nextElement && draggedElement === nextElement.previousElementSibling) {
-                return;
-            }
-
-            if (nextElement && draggedElement === nextElement.nextElementSibling) {
-                return;
-            }
-
             const draggedIndex = parseInt(draggedElement.dataset.index);
             const newIndex = nextElement ? parseInt(nextElement.dataset.index) : this.state.colors.length - 1;
 
             const [movedColor] = this.state.colors.splice(draggedIndex, 1);
             this.state.colors.splice(newIndex, 0, movedColor);
-
             this.updateTable();
         });
-
 
         tbody.innerHTML = '';
 
