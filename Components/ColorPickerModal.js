@@ -52,7 +52,7 @@ export default class ColorPickerModal extends ColorTable {
   .modal-content {
     background-color: #313131;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px #0000001A;
   }
 
   .modal-title {
@@ -95,14 +95,14 @@ export default class ColorPickerModal extends ColorTable {
   }
 
   .button-wrapper button {
-    background-color: rgba(83, 203, 241, 1);
+    background-color: #53CBF1;
     border-radius: 100px;
     width: 256px;
     height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(83, 203, 241, 1);
+    border: 1px solid #53CBF1;
     margin: 0 auto;
   }
 </style>

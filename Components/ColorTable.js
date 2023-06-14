@@ -148,7 +148,7 @@ export default class ColorTable extends HTMLElement {
     overflow: hidden;
     border-radius: 100px;
     padding: 9px 67px;
-    border: 1px solid rgba(83, 203, 241, 1);
+    border: 1px solid #53CBF1;
     background-color: #313131;
     color: #ffffff;
   }
