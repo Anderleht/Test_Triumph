@@ -3,11 +3,7 @@ export default class ColorTable extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.state = { // Хранилище цветов
-            colors: [
-                { colorName: 'Мятное утро', type: 'base', code: '#86EAE9' },
-                { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AAFEA9' },
-                { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AFEABF' },
-            ],
+            colors: [],
         }
     }
 
@@ -36,7 +32,7 @@ export default class ColorTable extends HTMLElement {
   }
 
 
-  .modal-content {
+  .content {
     width: 679px;
     color: #ffffff;
     background-color: #313131;
@@ -51,7 +47,7 @@ export default class ColorTable extends HTMLElement {
     border: 1px solid #000000;
   }
 
-  .modal-header {
+  .header {
     align-items: center;
     justify-content: space-between;
     display: flex;
@@ -74,7 +70,7 @@ export default class ColorTable extends HTMLElement {
     font-size: 18px;
   }
 
-  .modal-header h2 {
+  .header h2 {
     margin-left: auto;
     display: flex;
     align-items: center;
@@ -172,8 +168,8 @@ export default class ColorTable extends HTMLElement {
   }
 </style>
 
-<div class="modal-content">
-  <div class="modal-header">
+<div class="content">
+  <div class="header">
     <h2 class="color-table-name">Таблица цветов</h2>
     <button class="save-button"><img src="../icons/save.png" alt="Кнопка сохранить"></button>
     <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
