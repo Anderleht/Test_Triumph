@@ -4,7 +4,7 @@ export default class ColorTable extends HTMLElement {
         this.attachShadow({ mode: 'open' });
         this.state = { // Хранилище цветов
             colors: [
-                { colorName: 'Мятное утро', type: 'Основной', code: '#86EAE9' },
+                { colorName: 'Мятное утро', type: 'base', code: '#86EAE9' },
                 { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AAFEA9' },
                 { colorName: 'Лавандовый пунш', type: 'Основной', code: '#AFEABF' },
             ],
@@ -43,17 +43,19 @@ export default class ColorTable extends HTMLElement {
     border-radius: 20px;
     align-items: center;
     justify-content: center;
-    font-family: 'Lato';
-    font-weight: 600;
+    font-family: 'Lato', sans-serif;
+    font-style: normal;
+    font-weight: 400;
     box-sizing: border-box;
-    margin: 10% auto;
+    margin: 0;
     border: 1px solid #000000;
   }
 
   .modal-header {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    display: flex;
+    height: 67px;
   }
 
   .close-button {
@@ -62,22 +64,22 @@ export default class ColorTable extends HTMLElement {
     border: none;
     background: none;
     font-size: 18px;
-    margin-left: auto;
   }
   .save-button {
+    margin-left: auto;
     padding: 0;
     cursor: pointer;
     border: none;
     background: none;
     font-size: 18px;
-    margin-left: auto;
   }
 
   .modal-header h2 {
-    flex-grow: 1;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    font-weight: 600;
-    padding-bottom: 25px;
     font-size: 18px;
     margin-top: 20px;
     line-height: 50px;
@@ -94,34 +96,11 @@ export default class ColorTable extends HTMLElement {
     padding: 0;
     text-align: center;
     font-size: 11px;
+    line-height: 15px;
     font-weight: 400;
     word-break: break-word;
   }
-
-  .color-table td .close-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: none;
-    font-size: 18px;
-    padding: 0;
-  }
-
-  .color-table td .edit-button,
-  .color-table td .delete-button {
-    background-color: #424242;
-    border: none;
-    background-position: center;
-    background-repeat: no-repeat;
-    width: 16.66%;
-    height: 55px;
-    margin: 0;
-    padding: 0;
-  }
-
+  
   .color-table th,
   .color-table td {
     border-bottom: 1px solid #313131;
@@ -165,9 +144,23 @@ export default class ColorTable extends HTMLElement {
     background-color: #717171;
   }
   .edit-button {
+    padding: 0;
+    border: none;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #424242;
+    width: 90%;
+    height: 90%;
     background-image: url("../icons/change.png");
   }
   .delete-button {
+    padding: 0;
+    border: none;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #424242;
+    width: 90%;
+    height: 90%;
     background-image: url("../icons/delete.png");
   }
   
@@ -182,7 +175,7 @@ export default class ColorTable extends HTMLElement {
 <div class="modal-content">
   <div class="modal-header">
     <h2 class="color-table-name">Таблица цветов</h2>
-    <button class="save-button"><img src="../icons/Vector.png" alt="Кнопка сохранить"></button>
+    <button class="save-button"><img src="../icons/save.png" alt="Кнопка сохранить"></button>
     <button class="close-button"><img src="../icons/close_icon.png" alt="Кнопка закрыть"></button>
   </div>
   <table class="color-table">
@@ -373,5 +366,4 @@ export default class ColorTable extends HTMLElement {
         colorPickerModal.style.display = 'block';
         colorPickerModal.setColors(currentColor, index, 'editing');
     }
-
 }

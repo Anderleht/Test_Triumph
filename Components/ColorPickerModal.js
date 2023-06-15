@@ -46,7 +46,7 @@ export default class ColorPickerModal extends ColorTable {
     background-color: #313131;
     box-sizing: border-box;
     color: white;
-    font-family: 'Lato';
+    font-family: 'Lato', sans-serif;
   }
 
   .modal-content {
@@ -119,8 +119,8 @@ export default class ColorPickerModal extends ColorTable {
       <select id="colorType">
         <option value="Main">Main</option>
         <option value="Primary">Primary</option>
-        <option value="Main">Secondary</option>
-        <option value="Primary">Base</option>
+        <option value="Secondary">Secondary</option>
+        <option value="Base">Base</option>
       </select>
       <div class="arrow"></div>
     </div>
@@ -153,12 +153,6 @@ export default class ColorPickerModal extends ColorTable {
         const colorTypeElement = this.shadowRoot.querySelector('#colorType');
         const colorPickerInput = this.shadowRoot.querySelector('#hex');
 
-        if (this.state.stateOfComponent === 'editing') {
-            colorNameInput.value = this.state.colorName;
-            colorTypeElement.value = this.state.colorType;
-            colorPickerInput.value = this.state.colorCode;
-        }
-
         addButton.addEventListener('click', () => {
             this.state.colorName = colorNameInput.value;
             this.state.colorType = colorTypeElement.value;
@@ -188,13 +182,22 @@ export default class ColorPickerModal extends ColorTable {
         });
     }
 
+    updateValues() {
+        const colorNameInput = this.shadowRoot.querySelector('#colorName');
+        const colorTypeElement = this.shadowRoot.querySelector('#colorType');
+        const colorPickerInput = this.shadowRoot.querySelector('#hex');
+        colorNameInput.value = this.state.colorName;
+        colorTypeElement.value = this.state.colorType;
+        colorPickerInput.value = this.state.colorCode;
+    };
+
     setColors(color, index, state) { // Метод через, который перебрасываются данные из компонента ColorTable
         this.state.colorName = color.colorName;
         this.state.colorType = color.type;
         this.state.colorCode = color.code;
         this.state.index = index;
         this.state.stateOfComponent = state;
+        this.updateValues();
     }
-
 }
 
